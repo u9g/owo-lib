@@ -39,7 +39,6 @@
   "client": [
     "ClientLoginNetworkHandlerAccessor",
     "DrawContextMixin",
-    "MinecraftClientMixin",
     "itemgroup.AbstractInventoryScreenMixin",
     "itemgroup.CreativeInventoryScreenAccessor",
     "itemgroup.CreativeInventoryScreenMixin",
@@ -76,9 +75,6 @@
     "ui.layers.KeyboardMixin",
     "ui.layers.MouseMixin",
     "ui.layers.ScreenMixin"
-  ],
-  "server": [
-    "MainMixin"
   ],
   "injectors": {
     "defaultRequire": 1

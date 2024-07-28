@@ -36,9 +36,10 @@ public final class ModDataLoader {
         Map<Identifier, JsonObject> foundFiles = new HashMap<>();
 
         FabricLoader.getInstance().getAllMods().forEach(modContainer -> {
-            final var targetPath = modContainer.getRootPath().resolve(String.format("data/%s/%s", modContainer.getMetadata().getId(), consumer.getDataSubdirectory()));
-
-            tryLoadFilesFrom(foundFiles, modContainer.getMetadata().getId(), targetPath);
+            for (Path path : modContainer.getRootPaths()) {
+                final var targetPath = path.resolve(String.format("data/%s/%s", modContainer.getMetadata().getId(), consumer.getDataSubdirectory()));
+                tryLoadFilesFrom(foundFiles, modContainer.getMetadata().getId(), targetPath);
+            }
         });
 
         try {
