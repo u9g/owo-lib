@@ -215,6 +215,7 @@ public class Uwu implements ModInitializer {
                     var result = getter.invoke(message);
                     if (result instanceof String string) content = string;
                 } catch (ReflectiveOperationException ignored) {
+                    // If the message type changes, fall back to toString() rather than failing the event
                     content = message.toString();
                 }
             }

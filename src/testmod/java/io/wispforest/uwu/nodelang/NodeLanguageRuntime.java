@@ -74,11 +74,11 @@ public final class NodeLanguageRuntime {
     }
 
     public synchronized boolean allowChatMessage(String message) {
+        var content = message == null ? "" : message;
         Boolean decision = null;
 
         for (var node : this.script.allowChatNodes()) {
-            if (message == null || node.includes().isEmpty()) continue;
-            if (!message.contains(node.includes())) continue;
+            if (!(node.includes().isEmpty() || content.contains(node.includes()))) continue;
 
             if (!node.allow()) return false;
             decision = true;
@@ -104,7 +104,9 @@ public final class NodeLanguageRuntime {
                 this.loadText(this.scriptPath);
                 return true;
             }
-        } catch (IOException | JsonParseException ignored) {}
+        } catch (IOException | JsonParseException ignored) {
+            // ignore reload errors to avoid crashing when the user is midway through editing
+        }
 
         return false;
     }
