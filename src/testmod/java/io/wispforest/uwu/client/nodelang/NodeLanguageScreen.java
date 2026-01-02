@@ -72,9 +72,16 @@ public class NodeLanguageScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     private Path resolvePath() {
-        var configDir = FabricLoader.getInstance().getConfigDir();
+        var configDir = FabricLoader.getInstance().getConfigDir().normalize();
         var name = this.fileName.getValue().isBlank() ? "owo-node-language.json" : this.fileName.getValue();
-        return configDir.resolve(name);
+        var candidate = configDir.resolve(name).normalize();
+
+        if (!candidate.startsWith(configDir)) {
+            this.status.text(Component.literal("Invalid file name, using default path"));
+            return configDir.resolve("owo-node-language.json");
+        }
+
+        return candidate;
     }
 
     private void loadScript() {

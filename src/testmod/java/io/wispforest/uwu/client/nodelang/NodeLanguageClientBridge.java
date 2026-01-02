@@ -33,8 +33,8 @@ public final class NodeLanguageClientBridge {
         for (var node : runtime.tickNodes()) {
             if (node.actionText().isEmpty()) continue;
 
-            var last = LAST_EXECUTION.getOrDefault(node.id(), Long.MIN_VALUE);
-            if (gameTime - last < node.interval()) continue;
+            var last = LAST_EXECUTION.get(node.id());
+            if (last != null && gameTime - last < node.interval()) continue;
 
             LAST_EXECUTION.put(node.id(), gameTime);
             client.player.displayClientMessage(Component.literal(node.actionText()), true);

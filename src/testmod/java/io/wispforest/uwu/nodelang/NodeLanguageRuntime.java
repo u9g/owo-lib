@@ -77,17 +77,21 @@ public final class NodeLanguageRuntime {
     public synchronized boolean allowChatMessage(String message) {
         var content = message == null ? "" : message;
         boolean matchedAllow = false;
-        boolean matchedRule = false;
+        boolean matchedDeny = false;
 
         for (var node : this.script.allowChatNodes()) {
             if (!node.includes().isEmpty() && !content.contains(node.includes())) continue;
 
-            matchedRule = true;
-            if (!node.allow()) return false;
-            matchedAllow = true;
+            if (node.allow()) {
+                matchedAllow = true;
+            } else {
+                matchedDeny = true;
+            }
         }
 
-        return !matchedRule || matchedAllow;
+        if (matchedAllow) return true;
+        if (matchedDeny) return false;
+        return true;
     }
 
     public synchronized List<HudNode> hudNodes() {
@@ -128,7 +132,8 @@ public final class NodeLanguageRuntime {
     }
 
     private void persist() throws IOException {
-        Files.createDirectories(this.scriptPath.getParent());
+        var parent = this.scriptPath.getParent();
+        if (parent != null) Files.createDirectories(parent);
         Files.writeString(this.scriptPath, this.scriptAsJson());
         this.lastLoaded = Files.getLastModifiedTime(this.scriptPath);
     }
