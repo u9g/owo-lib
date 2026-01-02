@@ -3,6 +3,7 @@ package io.wispforest.uwu.nodelang;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import io.wispforest.owo.Owo;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Locale;
 
 public final class NodeLanguageRuntime {
 
@@ -75,12 +77,13 @@ public final class NodeLanguageRuntime {
     }
 
     public synchronized boolean allowChatMessage(String message) {
-        var content = message == null ? "" : message;
+        var content = message == null ? "" : message.toLowerCase(Locale.ROOT);
         boolean matchedAllow = false;
         boolean matchedDeny = false;
 
         for (var node : this.script.allowChatNodes()) {
-            if (!node.includes().isEmpty() && !content.contains(node.includes())) continue;
+            var include = node.includes() == null ? "" : node.includes().toLowerCase(Locale.ROOT);
+            if (!include.isEmpty() && !content.contains(include)) continue;
 
             if (node.allow()) {
                 matchedAllow = true;
@@ -111,8 +114,8 @@ public final class NodeLanguageRuntime {
                 this.loadText(this.scriptPath);
                 return true;
             }
-        } catch (IOException | JsonParseException ignored) {
-            // ignore reload errors to avoid crashing when the user is midway through editing
+        } catch (IOException | JsonParseException error) {
+            Owo.LOGGER.debug("Failed to reload node language script", error);
         }
 
         return false;

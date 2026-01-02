@@ -74,6 +74,7 @@ public class NodeLanguageScreen extends BaseOwoScreen<FlowLayout> {
     private Path resolvePath() {
         var configDir = FabricLoader.getInstance().getConfigDir().normalize();
         var name = this.fileName.getValue().isBlank() ? "owo-node-language.json" : this.fileName.getValue();
+        if (!name.endsWith(".json")) name = name + ".json";
         var candidate = configDir.resolve(name).normalize();
 
         if (!candidate.startsWith(configDir)) {

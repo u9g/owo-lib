@@ -6,7 +6,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public final class NodeLanguageClientBridge {
 
@@ -29,9 +31,12 @@ public final class NodeLanguageClientBridge {
 
         if (client.level == null || client.player == null) return;
         var gameTime = client.level.getGameTime();
+        Set<String> activeIds = new HashSet<>();
 
         for (var node : runtime.tickNodes()) {
             if (node.actionText().isEmpty()) continue;
+
+            activeIds.add(node.id());
 
             var last = LAST_EXECUTION.get(node.id());
             if (last != null && gameTime - last < node.interval()) continue;
@@ -39,5 +44,7 @@ public final class NodeLanguageClientBridge {
             LAST_EXECUTION.put(node.id(), gameTime);
             client.player.displayClientMessage(Component.literal(node.actionText()), true);
         }
+
+        LAST_EXECUTION.keySet().retainAll(activeIds);
     }
 }
