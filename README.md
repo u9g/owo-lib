@@ -77,6 +77,7 @@ owo is documented in two main ways:
 
 This is by no means an exhaustive list, for a more complete overview head to https://docs.wispforest.io/owo/features
 
+ - **[Braid](BRAID.md)**, a modern declarative UI framework inspired by Flutter, featuring reactive state management, hot-reloading support, and a rich widget library. Perfect for building complex, interactive UIs with minimal code
  - [owo-ui](https://docs.wispforest.io/owo/ui), a fully-featured declarative UI library for building dynamic, beautiful screens with blazingly fast development times
  - [owo-config](https://docs.wispforest.io/owo/config), a built-in, customizable configuration system built on top of owo-ui. It provides many of the same features as [Cloth Config](https://modrinth.com/mod/cloth-config) while many new conveniences, like server-client config synchronization, added on top
  - A fully automatic [registration system](https://docs.wispforest.io/owo/registration) that is designed to be as generic as possible. It is simple and non-verbose to use for basic registries, yet the underlying API tree is flexible and can also be used for many custom registration solutions
