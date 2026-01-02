@@ -73,6 +73,9 @@ owo is documented in two main ways:
  - There is rich, detailed JavaDoc throughout the entire codebase
  - There is a wiki with in-depth explanations and tutorials for most of owo's features over at https://docs.wispforest.io/owo/features
 
+**Additional Resources:**
+ - [Adding Braid Support to Your 1.20.1 Fabric Mod](BRAID_SETUP.md) - Tutorial for multi-version support using Braid
+
 ## Features
 
 This is by no means an exhaustive list, for a more complete overview head to https://docs.wispforest.io/owo/features
