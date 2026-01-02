@@ -330,18 +330,18 @@ public class YourClientMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         // Register a keybind
-        var toggleArmorHud = new KeyBinding(
+        var toggleArmorHudKey = new KeyBinding(
             "key.yourmod.toggle_armor_hud",
             GLFW.GLFW_KEY_H,
             "key.categories.yourmod"
         );
-        KeyBindingHelper.registerKeyBinding(toggleArmorHud);
+        KeyBindingHelper.registerKeyBinding(toggleArmorHudKey);
         
         var hudId = Identifier.of("yourmod", "armor_hud");
         
         // Handle toggle logic
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (toggleArmorHud.wasPressed()) {
+            while (toggleArmorHudKey.wasPressed()) {
                 if (Hud.hasComponent(hudId)) {
                     Hud.remove(hudId);
                 } else {
@@ -390,31 +390,16 @@ public class ChatScreenButtonsExample implements ClientModInitializer {
                 button -> sendCommand("/spawn")
             );
             
-            var tpaButton = Components.button(
-                Text.literal("/tpa"),
-                button -> {
-                    var client = MinecraftClient.getInstance();
-                    // Just insert the command in chat, don't send it
-                    // This allows the player to add a player name
-                    if (client.currentScreen instanceof ChatScreen chatScreen) {
-                        // Unfortunately, we can't directly access the text field
-                        // In a real implementation, you'd need a mixin or use reflection
-                        // For this example, we'll just send a message
-                        if (client.player != null) {
-                            client.player.sendMessage(
-                                Text.literal("Use /tpa <player> to teleport"), 
-                                false
-                            );
-                        }
-                    }
-                }
+            var balanceButton = Components.button(
+                Text.literal("/balance"),
+                button -> sendCommand("/balance")
             );
             
             // Create a horizontal layout for the buttons
             var buttonRow = Containers.horizontalFlow(Sizing.content(), Sizing.content())
                 .child(homeButton)
                 .child(spawnButton)
-                .child(tpaButton)
+                .child(balanceButton)
                 .gap(5)
                 .padding(Insets.of(5))
                 .surface(Surface.PANEL);
@@ -674,7 +659,7 @@ public class HudModClient implements ClientModInitializer {
                 .child(Components.label(Text.literal("⚔ Armor")))
                 .child(Components.label(Text.literal(() -> {
                     if (client.player == null) return "N/A";
-                    return "Protection: " + client.player.getArmor();
+                    return "Armor: " + client.player.getArmor();
                 })))
                 .alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER)
                 .padding(Insets.of(5));
