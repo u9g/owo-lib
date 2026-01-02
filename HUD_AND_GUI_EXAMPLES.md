@@ -462,21 +462,19 @@ public class AdvancedChatButtonsExample implements ClientModInitializer {
             instance.adapter.rootComponent.child(commandButtons);
             
             // Try to position above the chat input field
-            // We'll look for the TextFieldWidget in the chat screen
-            var chatField = instance.queryWidget(widget -> widget instanceof TextFieldWidget);
+            // Note: alignComponentToWidget takes a predicate to find the widget
+            instance.alignComponentToWidget(
+                widget -> widget instanceof TextFieldWidget,
+                Layer.Instance.AnchorSide.TOP,
+                0, // No offset along the anchor
+                commandButtons
+            );
             
-            if (chatField != null) {
-                // Position the buttons above the chat field
-                instance.alignComponentToWidget(
-                    widget -> widget instanceof TextFieldWidget,
-                    Layer.Instance.AnchorSide.TOP,
-                    0, // No offset along the anchor
-                    commandButtons
-                );
-            } else {
-                // Fallback: position at bottom
-                commandButtons.positioning(Positioning.relative(50, 95));
-            }
+            // Note: If the widget isn't found, the component will default to its positioning
+            // We could add a fallback with queryWidget first if needed:
+            // if (instance.queryWidget(w -> w instanceof TextFieldWidget) == null) {
+            //     commandButtons.positioning(Positioning.relative(50, 95));
+            // }
             
         }, ChatScreen.class);
     }
