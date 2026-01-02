@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
+import java.util.Objects;
 
 public final class NodeLanguageRuntime {
 
@@ -56,7 +57,7 @@ public final class NodeLanguageRuntime {
         this.setScriptPath(path);
 
         if (!Files.exists(path)) {
-            this.script = DEFAULT_SCRIPT;
+            this.script = this.sanitize(DEFAULT_SCRIPT);
             this.persist();
             return this.scriptAsJson();
         }
@@ -75,16 +76,18 @@ public final class NodeLanguageRuntime {
 
     public synchronized boolean allowChatMessage(String message) {
         var content = message == null ? "" : message;
-        Boolean decision = null;
+        boolean matchedAllow = false;
+        boolean matchedRule = false;
 
         for (var node : this.script.allowChatNodes()) {
             if (!node.includes().isEmpty() && !content.contains(node.includes())) continue;
 
+            matchedRule = true;
             if (!node.allow()) return false;
-            decision = true;
+            matchedAllow = true;
         }
 
-        return decision == null || decision;
+        return !matchedRule || matchedAllow;
     }
 
     public synchronized List<HudNode> hudNodes() {
@@ -115,18 +118,50 @@ public final class NodeLanguageRuntime {
         try {
             this.loadText(this.scriptPath);
         } catch (IOException | JsonParseException e) {
-            this.script = DEFAULT_SCRIPT;
+            this.script = this.sanitize(DEFAULT_SCRIPT);
         }
     }
 
     private NodeScript parse(String text) throws JsonParseException {
         var parsed = GSON.fromJson(text, NodeScript.class);
-        return parsed != null ? parsed : NodeScript.empty();
+        return this.sanitize(parsed);
     }
 
     private void persist() throws IOException {
         Files.createDirectories(this.scriptPath.getParent());
         Files.writeString(this.scriptPath, this.scriptAsJson());
         this.lastLoaded = Files.getLastModifiedTime(this.scriptPath);
+    }
+
+    private NodeScript sanitize(NodeScript parsed) {
+        if (parsed == null) return NodeScript.empty();
+
+        var allowNodes = parsed.allowChatNodes() == null ? List.<AllowChatNode>of() : parsed.allowChatNodes().stream()
+            .filter(Objects::nonNull)
+            .map(node -> new AllowChatNode(
+                node.id() == null || node.id().isBlank() ? "allow-chat" : node.id(),
+                node.includes() == null ? "" : node.includes(),
+                node.allow()
+            )).toList();
+
+        var hudNodes = parsed.hudNodes() == null ? List.<HudNode>of() : parsed.hudNodes().stream()
+            .filter(Objects::nonNull)
+            .map(node -> new HudNode(
+                node.id() == null || node.id().isBlank() ? "hud" : node.id(),
+                node.text() == null ? "" : node.text(),
+                node.x(),
+                node.y(),
+                node.color()
+            )).toList();
+
+        var tickNodes = parsed.tickNodes() == null ? List.<TickActionNode>of() : parsed.tickNodes().stream()
+            .filter(Objects::nonNull)
+            .map(node -> new TickActionNode(
+                node.id() == null || node.id().isBlank() ? "tick" : node.id(),
+                node.interval() <= 0 ? 20 : node.interval(),
+                node.actionText() == null ? "" : node.actionText()
+            )).toList();
+
+        return new NodeScript(List.copyOf(allowNodes), List.copyOf(hudNodes), List.copyOf(tickNodes));
     }
 }

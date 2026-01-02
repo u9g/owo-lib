@@ -63,7 +63,7 @@ public class NodeLanguageScreen extends BaseOwoScreen<FlowLayout> {
             }));
 
         rootComponent
-            .child(UIComponents.label(Component.literal("Node-based language editor (allow chat, HUD, tick events)")))
+            .child(UIComponents.label(Component.literal("Node Language Script Editor - configure chat filters, HUD text, and tick actions")))
             .child(fileRow)
             .child(UIComponents.label(Component.literal("Scripts live in the config folder. allowChat nodes use includes + allow flag.")))
             .child(this.editor)
