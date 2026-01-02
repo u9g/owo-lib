@@ -205,22 +205,11 @@ public class Uwu implements ModInitializer {
         UwuItems.init();
 
         AllowChatEvent.EVENT.register((player, message) -> {
-            var content = "";
-
             if (message instanceof Component component) {
-                content = component.getString();
-            } else if (message != null) {
-                try {
-                    var getter = message.getClass().getMethod("getString");
-                    var result = getter.invoke(message);
-                    if (result instanceof String string) content = string;
-                } catch (ReflectiveOperationException ignored) {
-                    // If the message type changes, fall back to toString() rather than failing the event
-                    content = message.toString();
-                }
+                return NodeLanguageRuntime.get().allowChatMessage(component.getString());
             }
 
-            return NodeLanguageRuntime.get().allowChatMessage(content);
+            return NodeLanguageRuntime.get().allowChatMessage(String.valueOf(message));
         });
 
         TagInjector.inject(BuiltInRegistries.BLOCK, BlockTags.BASE_STONE_OVERWORLD.location(), Blocks.GLASS);

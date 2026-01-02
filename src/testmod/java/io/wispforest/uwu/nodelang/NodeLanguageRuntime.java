@@ -78,7 +78,7 @@ public final class NodeLanguageRuntime {
         Boolean decision = null;
 
         for (var node : this.script.allowChatNodes()) {
-            if (!(node.includes().isEmpty() || content.contains(node.includes()))) continue;
+            if (!node.includes().isEmpty() && !content.contains(node.includes())) continue;
 
             if (!node.allow()) return false;
             decision = true;

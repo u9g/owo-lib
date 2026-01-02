@@ -5,7 +5,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class NodeLanguageClientBridge {
+
+    private static final Map<String, Long> LAST_EXECUTION = new HashMap<>();
 
     private NodeLanguageClientBridge() {}
 
@@ -23,13 +28,16 @@ public final class NodeLanguageClientBridge {
         runtime.reloadIfChanged();
 
         if (client.level == null || client.player == null) return;
+        var gameTime = client.level.getGameTime();
 
         for (var node : runtime.tickNodes()) {
             if (node.actionText().isEmpty()) continue;
 
-            if (client.level.getGameTime() % node.interval() == 0) {
-                client.player.displayClientMessage(Component.literal(node.actionText()), true);
-            }
+            var last = LAST_EXECUTION.getOrDefault(node.id(), Long.MIN_VALUE);
+            if (gameTime - last < node.interval()) continue;
+
+            LAST_EXECUTION.put(node.id(), gameTime);
+            client.player.displayClientMessage(Component.literal(node.actionText()), true);
         }
     }
 }
