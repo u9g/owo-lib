@@ -21,6 +21,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
@@ -56,6 +57,18 @@ public class UwuClient implements ClientModInitializer {
         final var bindingButCooler = new KeyBinding("key.uwu.hud_test_two", GLFW.GLFW_KEY_K, KeyBinding.Category.MISC);
         KeyBindingHelper.registerKeyBinding(bindingButCooler);
 
+        // Example: Movable Armor HUD (toggle with L key)
+        final var toggleArmorHudKey = new KeyBinding("key.uwu.toggle_armor_hud", GLFW.GLFW_KEY_L, KeyBinding.Category.MISC);
+        KeyBindingHelper.registerKeyBinding(toggleArmorHudKey);
+
+        // Example: Movable Coordinate HUD (toggle with O key)
+        final var toggleCoordinateHudKey = new KeyBinding("key.uwu.toggle_coordinate_hud", GLFW.GLFW_KEY_O, KeyBinding.Category.MISC);
+        KeyBindingHelper.registerKeyBinding(toggleCoordinateHudKey);
+
+        // Example: Movable Potion Effect HUD (toggle with P key)
+        final var togglePotionHudKey = new KeyBinding("key.uwu.toggle_potion_hud", GLFW.GLFW_KEY_P, KeyBinding.Category.MISC);
+        KeyBindingHelper.registerKeyBinding(togglePotionHudKey);
+
         final var hudComponentId = Identifier.of("uwu", "test_element");
         final Supplier<Component> hudComponent = () ->
                 Containers.verticalFlow(Sizing.content(), Sizing.content())
@@ -72,6 +85,11 @@ public class UwuClient implements ClientModInitializer {
         final Supplier<Component> coolerComponent = () -> UIModel.load(Path.of("../src/testmod/resources/assets/uwu/owo_ui/test_element_two.xml")).expandTemplate(FlowLayout.class, "hud-element", Map.of());
         Hud.add(coolerComponentId, coolerComponent);
 
+        // Register example HUD widgets
+        final var armorHudId = Identifier.of("uwu", "armor_hud");
+        final var coordinateHudId = Identifier.of("uwu", "coordinate_hud");
+        final var potionHudId = Identifier.of("uwu", "potion_hud");
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (binding.wasPressed()) {
                 if (Hud.hasComponent(hudComponentId)) {
@@ -87,6 +105,33 @@ public class UwuClient implements ClientModInitializer {
 
                 //noinspection StatementWithEmptyBody
                 while (bindingButCooler.wasPressed()) {}
+            }
+
+            // Toggle Armor HUD
+            while (toggleArmorHudKey.wasPressed()) {
+                if (Hud.hasComponent(armorHudId)) {
+                    Hud.remove(armorHudId);
+                } else {
+                    registerArmorHud(armorHudId);
+                }
+            }
+
+            // Toggle Coordinate HUD
+            while (toggleCoordinateHudKey.wasPressed()) {
+                if (Hud.hasComponent(coordinateHudId)) {
+                    Hud.remove(coordinateHudId);
+                } else {
+                    registerCoordinateHud(coordinateHudId);
+                }
+            }
+
+            // Toggle Potion Effect HUD
+            while (togglePotionHudKey.wasPressed()) {
+                if (Hud.hasComponent(potionHudId)) {
+                    Hud.remove(potionHudId);
+                } else {
+                    registerPotionEffectHud(potionHudId);
+                }
             }
         });
 
@@ -149,6 +194,114 @@ public class UwuClient implements ClientModInitializer {
 
             instance.alignComponentToHandledScreenCoordinates(button, 125, 65);
         }, InventoryScreen.class);
+
+        // Example: Add command buttons to ChatScreen
+        Layers.add(Containers::verticalFlow, instance -> {
+            var commandButtons = Containers.horizontalFlow(Sizing.content(), Sizing.content())
+                    .child(Components.button(Text.literal("🏠 Home"), btn -> sendCommand("/home")))
+                    .child(Components.button(Text.literal("⭐ Spawn"), btn -> sendCommand("/spawn")))
+                    .child(Components.button(Text.literal("💰 Balance"), btn -> sendCommand("/balance")))
+                    .gap(5)
+                    .padding(Insets.of(5))
+                    .surface(Surface.PANEL)
+                    .positioning(Positioning.relative(50, 95));
+
+            instance.adapter.rootComponent.child(commandButtons);
+        }, ChatScreen.class);
+    }
+
+    // Example: Movable Armor HUD
+    private static void registerArmorHud(Identifier hudId) {
+        Hud.add(hudId, () -> {
+            var client = MinecraftClient.getInstance();
+
+            var content = Containers.verticalFlow(Sizing.content(), Sizing.content())
+                    .child(Components.label(Text.literal("⚔ Armor")))
+                    .child(Components.label(Text.literal(() -> {
+                        if (client.player == null) return "N/A";
+                        return "Armor: " + client.player.getArmor();
+                    })))
+                    .alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER)
+                    .padding(Insets.of(5));
+
+            return Containers.draggable(Sizing.content(), Sizing.content(), content)
+                    .surface(Surface.PANEL)
+                    .foreheadSize(15)
+                    .positioning(Positioning.absolute(10, 10));
+        });
+    }
+
+    // Example: Movable Coordinate HUD
+    private static void registerCoordinateHud(Identifier hudId) {
+        Hud.add(hudId, () -> {
+            var client = MinecraftClient.getInstance();
+
+            var coordinateDisplay = Containers.verticalFlow(Sizing.content(), Sizing.content())
+                    .child(Components.label(Text.literal("📍 Coordinates")).margins(Insets.bottom(3)))
+                    .child(Components.label(Text.literal(() -> {
+                        if (client.player == null) return "X: N/A";
+                        return String.format("X: %.1f", client.player.getX());
+                    })))
+                    .child(Components.label(Text.literal(() -> {
+                        if (client.player == null) return "Y: N/A";
+                        return String.format("Y: %.1f", client.player.getY());
+                    })))
+                    .child(Components.label(Text.literal(() -> {
+                        if (client.player == null) return "Z: N/A";
+                        return String.format("Z: %.1f", client.player.getZ());
+                    })))
+                    .padding(Insets.of(5));
+
+            return Containers.draggable(Sizing.content(), Sizing.content(), coordinateDisplay)
+                    .surface(Surface.PANEL)
+                    .foreheadSize(15)
+                    .positioning(Positioning.absolute(10, 60));
+        });
+    }
+
+    // Example: Movable Potion Effect HUD
+    private static void registerPotionEffectHud(Identifier hudId) {
+        Hud.add(hudId, () -> {
+            var client = MinecraftClient.getInstance();
+
+            // Create title bar for visual indication of drag area
+            var titleBar = Containers.horizontalFlow(Sizing.content(), Sizing.fixed(12))
+                    .child(Components.label(Text.literal("⚗ Effects")))
+                    .alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER)
+                    .surface(Surface.DARK_PANEL)
+                    .padding(Insets.horizontal(8));
+
+            // Create effects display
+            var effectsDisplay = Containers.verticalFlow(Sizing.content(), Sizing.content())
+                    .child(Components.label(Text.literal(() -> {
+                        if (client.player == null) return "No effects";
+
+                        var effects = client.player.getStatusEffects();
+                        if (effects.isEmpty()) return "No effects";
+
+                        return effects.size() + " active effect" + (effects.size() > 1 ? "s" : "");
+                    })))
+                    .padding(Insets.of(5));
+
+            // Combine title and content
+            var content = Containers.verticalFlow(Sizing.content(), Sizing.content())
+                    .child(titleBar)
+                    .child(effectsDisplay)
+                    .surface(Surface.PANEL);
+
+            return Containers.draggable(Sizing.content(), Sizing.content(), content)
+                    .foreheadSize(12)
+                    .positioning(Positioning.absolute(10, 130));
+        });
+    }
+
+    // Helper method to send commands from chat screen buttons
+    private static void sendCommand(String command) {
+        var client = MinecraftClient.getInstance();
+        if (client.player != null) {
+            client.setScreen(null); // Close chat screen
+            client.player.networkHandler.sendChatCommand(command.substring(1)); // Remove leading '/'
+        }
     }
 
     public record WeirdMessage(int e) {}

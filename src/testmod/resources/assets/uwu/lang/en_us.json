@@ -25,6 +25,10 @@
       "color": "#0096FF"
     }
   ],
+  "key.uwu.hud_test_two": "Toggle Test HUD Two (XML)",
+  "key.uwu.toggle_armor_hud": "Toggle Armor HUD Example",
+  "key.uwu.toggle_coordinate_hud": "Toggle Coordinate HUD Example",
+  "key.uwu.toggle_potion_hud": "Toggle Potion Effect HUD Example",
   "text.ui.test_slider": "Value: %s",
   "text.config.uwu.section.top": "Top Text",
   "text.config.uwu.option.aValue": "A Value",
