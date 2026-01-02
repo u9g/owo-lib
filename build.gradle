@@ -104,6 +104,10 @@ sourceSets {
         runtimeClasspath += main.runtimeClasspath
         compileClasspath += main.compileClasspath
     }
+    nodescriptexample {
+        runtimeClasspath += main.runtimeClasspath
+        compileClasspath += main.compileClasspath
+    }
 }
 
 loom {
@@ -119,6 +123,12 @@ loom {
             ideConfigGenerated project.rootProject == project
             name = "Testmod Server"
             source sourceSets.testmod
+        }
+        nodescriptExampleClient {
+            client()
+            ideConfigGenerated project.rootProject == project
+            name = "NodeScript Example Client"
+            source sourceSets.nodescriptexample
         }
     }
 
@@ -154,6 +164,8 @@ dependencies {
 
     testmodImplementation sourceSets.main.output
     testmodAnnotationProcessor sourceSets.main.output
+
+    nodescriptexampleImplementation sourceSets.main.output
 }
 
 javadoc {

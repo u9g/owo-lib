@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "nodescriptexample",
+  "version": "${version}",
+  "name": "NodeScript Example",
+  "description": "Example mod demonstrating the owo-lib NodeScript visual scripting system for handling Fabric events",
+  "authors": [
+    "owo-lib contributors"
+  ],
+  "contact": {
+    "homepage": "https://github.com/wisp-forest/owo-lib",
+    "sources": "https://github.com/wisp-forest/owo-lib"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "io.wispforest.nodescriptexample.NodeScriptExampleClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*",
+    "minecraft": ">=1.18-alpha.21.40.a",
+    "owo": "*"
+  }
+}
