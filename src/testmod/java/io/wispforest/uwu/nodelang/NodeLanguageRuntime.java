@@ -74,14 +74,17 @@ public final class NodeLanguageRuntime {
     }
 
     public synchronized boolean allowChatMessage(String message) {
-        boolean result = true;
+        Boolean decision = null;
 
         for (var node : this.script.allowChatNodes()) {
             if (message == null || node.includes().isEmpty()) continue;
-            if (message.contains(node.includes())) result = node.allow();
+            if (!message.contains(node.includes())) continue;
+
+            if (!node.allow()) return false;
+            decision = true;
         }
 
-        return result;
+        return decision == null || decision;
     }
 
     public synchronized List<HudNode> hudNodes() {

@@ -207,7 +207,9 @@ public class Uwu implements ModInitializer {
         AllowChatEvent.EVENT.register((player, message) -> {
             var content = "";
 
-            if (message != null) {
+            if (message instanceof Component component) {
+                content = component.getString();
+            } else if (message != null) {
                 try {
                     var getter = message.getClass().getMethod("getString");
                     var result = getter.invoke(message);
