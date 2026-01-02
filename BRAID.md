@@ -19,9 +19,11 @@ Braid is included with owo-lib, so if you already have owo-lib as a dependency, 
 
 ### Prerequisites
 
-- owo-lib 0.12.0 or higher
-- Minecraft 1.20.1 or higher
+- owo-lib 0.13.0 or higher (for Braid support)
+- Minecraft 1.21+ (Braid is a newer feature)
 - Fabric Loader
+
+**Note**: Braid is a newer addition to owo-lib. For Minecraft 1.20.1, check the [releases page](https://github.com/wisp-forest/owo-lib/releases) to find the first version that includes Braid support, or consider using owo-ui for earlier versions.
 
 ### Adding owo-lib to Your Project
 
@@ -41,8 +43,9 @@ dependencies {
 
 And in your `gradle.properties`:
 ```properties
-# https://maven.wispforest.io/io/wispforest/owo-lib/
-owo_version=0.12.0+1.20.1
+# Check https://maven.wispforest.io/io/wispforest/owo-lib/ for the latest version
+# For Minecraft 1.21+, use 0.13.0+
+owo_version=0.13.0+1.21
 ```
 
 Check the [releases page](https://github.com/wisp-forest/owo-lib/releases) for the latest version compatible with your Minecraft version.
@@ -66,6 +69,14 @@ public class MyFirstBraidScreen extends BraidScreen {
     public MyFirstBraidScreen() {
         super(new MyApp());
     }
+    
+    // Or with custom settings:
+    // public MyFirstBraidScreen() {
+    //     var settings = new Settings();
+    //     settings.shouldPause = false; // Don't pause game when screen is open
+    //     settings.useBraidAppWidget = true; // Wrap with BraidApp (default shortcuts/navigation)
+    //     super(settings, new MyApp());
+    // }
     
     static class MyApp extends StatelessWidget {
         @Override
@@ -289,15 +300,19 @@ public class Counter extends StatefulWidget {
                     new MessageButton(
                         Component.literal("Increment"),
                         () -> {
-                            count++;
-                            markNeedsBuild(); // Trigger rebuild
+                            // Use setState() to update state and trigger rebuild
+                            setState(() -> {
+                                count++;
+                            });
                         }
                     ),
                     new MessageButton(
                         Component.literal("Decrement"),
                         () -> {
-                            count--;
-                            markNeedsBuild(); // Trigger rebuild
+                            // Use setState() to update state and trigger rebuild
+                            setState(() -> {
+                                count--;
+                            });
                         }
                     )
                 )
@@ -341,6 +356,56 @@ public class ReactiveCounter extends StatelessWidget {
                 )
             )
         );
+    }
+}
+```
+
+### Shared State
+
+For state that needs to be shared across multiple widgets:
+
+```java
+import io.wispforest.owo.braid.framework.BuildContext;
+import io.wispforest.owo.braid.framework.widget.StatelessWidget;
+import io.wispforest.owo.braid.framework.widget.Widget;
+import io.wispforest.owo.braid.widgets.button.MessageButton;
+import io.wispforest.owo.braid.widgets.flex.Column;
+import io.wispforest.owo.braid.widgets.label.Label;
+import io.wispforest.owo.braid.widgets.sharedstate.ShareableState;
+import io.wispforest.owo.braid.widgets.sharedstate.SharedState;
+import net.minecraft.network.chat.Component;
+
+import java.util.List;
+
+public class SharedCounter extends StatelessWidget {
+    @Override
+    public Widget build(BuildContext context) {
+        return new SharedState<>(
+            CounterState::new,
+            new Column(
+                List.of(
+                    new CountDisplay(),
+                    new MessageButton(
+                        Component.literal("Increment"),
+                        () -> SharedState.set(context, CounterState.class, 
+                            state -> state.count++
+                        )
+                    )
+                )
+            )
+        );
+    }
+    
+    static class CountDisplay extends StatelessWidget {
+        @Override
+        public Widget build(BuildContext context) {
+            var state = SharedState.get(context, CounterState.class);
+            return new Label(Component.literal("Count: " + state.count));
+        }
+    }
+    
+    static class CounterState extends ShareableState {
+        public int count = 0;
     }
 }
 ```
