@@ -18,14 +18,20 @@ public class NodeRegistry {
         // Register event nodes
         registerNode(AllowChatEventNode.TYPE, AllowChatEventNode::new, NodeCategory.EVENTS);
         registerNode(HudRenderEventNode.TYPE, HudRenderEventNode::new, NodeCategory.EVENTS);
+        registerNode(ClientTickEventNode.TYPE, ClientTickEventNode::new, NodeCategory.EVENTS);
+        registerNode(KeyPressEventNode.TYPE, KeyPressEventNode::new, NodeCategory.EVENTS);
 
         // Register logic nodes
         registerNode(StringIncludesNode.TYPE, StringIncludesNode::new, NodeCategory.LOGIC);
         registerNode(BooleanNotNode.TYPE, BooleanNotNode::new, NodeCategory.LOGIC);
+        registerNode(BooleanAndNode.TYPE, BooleanAndNode::new, NodeCategory.LOGIC);
+        registerNode(BooleanOrNode.TYPE, BooleanOrNode::new, NodeCategory.LOGIC);
+        registerNode(NumberCompareNode.TYPE, NumberCompareNode::new, NodeCategory.LOGIC);
 
         // Register constant nodes
         registerNode(StringConstantNode.TYPE, StringConstantNode::new, NodeCategory.CONSTANTS);
         registerNode(BooleanConstantNode.TYPE, BooleanConstantNode::new, NodeCategory.CONSTANTS);
+        registerNode(NumberConstantNode.TYPE, NumberConstantNode::new, NodeCategory.CONSTANTS);
 
         // Register action nodes
         registerNode(PrintChatNode.TYPE, PrintChatNode::new, NodeCategory.ACTIONS);

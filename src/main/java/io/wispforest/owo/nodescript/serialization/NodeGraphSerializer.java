@@ -53,6 +53,8 @@ public class NodeGraphSerializer {
             json.addProperty("value", stringConst.value());
         } else if (node instanceof BooleanConstantNode boolConst) {
             json.addProperty("value", boolConst.value());
+        } else if (node instanceof NumberConstantNode numberConst) {
+            json.addProperty("value", numberConst.value());
         }
 
         return json;
@@ -108,10 +110,16 @@ public class NodeGraphSerializer {
         Node node = switch (type) {
             case AllowChatEventNode.TYPE -> new AllowChatEventNode(id, x, y);
             case HudRenderEventNode.TYPE -> new HudRenderEventNode(id, x, y);
+            case ClientTickEventNode.TYPE -> new ClientTickEventNode(id, x, y);
+            case KeyPressEventNode.TYPE -> new KeyPressEventNode(id, x, y);
             case StringIncludesNode.TYPE -> new StringIncludesNode(id, x, y);
             case BooleanNotNode.TYPE -> new BooleanNotNode(id, x, y);
+            case BooleanAndNode.TYPE -> new BooleanAndNode(id, x, y);
+            case BooleanOrNode.TYPE -> new BooleanOrNode(id, x, y);
+            case NumberCompareNode.TYPE -> new NumberCompareNode(id, x, y);
             case StringConstantNode.TYPE -> new StringConstantNode(id, x, y);
             case BooleanConstantNode.TYPE -> new BooleanConstantNode(id, x, y);
+            case NumberConstantNode.TYPE -> new NumberConstantNode(id, x, y);
             case PrintChatNode.TYPE -> new PrintChatNode(id, x, y);
             default -> null;
         };
@@ -123,6 +131,8 @@ public class NodeGraphSerializer {
             stringConst.setValue(json.get("value").getAsString());
         } else if (node instanceof BooleanConstantNode boolConst && json.has("value")) {
             boolConst.setValue(json.get("value").getAsBoolean());
+        } else if (node instanceof NumberConstantNode numberConst && json.has("value")) {
+            numberConst.setValue(json.get("value").getAsDouble());
         }
 
         return node;
@@ -137,17 +147,34 @@ public class NodeGraphSerializer {
         var sourceNode = graph.getNode(sourceNodeId);
         var targetNode = graph.getNode(targetNodeId);
 
-        if (sourceNode == null || targetNode == null) return;
-
-        var sourcePort = sourceNode.getOutputPort(sourcePortId);
-        if (sourcePort == null) sourcePort = sourceNode.getInputPort(sourcePortId);
-
-        var targetPort = targetNode.getInputPort(targetPortId);
-        if (targetPort == null) targetPort = targetNode.getOutputPort(targetPortId);
-
-        if (sourcePort != null && targetPort != null) {
-            graph.connect(sourcePort, targetPort);
+        if (sourceNode == null) {
+            io.wispforest.owo.Owo.LOGGER.warn("[NodeScript] Connection references non-existent source node: {}", sourceNodeId);
+            return;
         }
+        if (targetNode == null) {
+            io.wispforest.owo.Owo.LOGGER.warn("[NodeScript] Connection references non-existent target node: {}", targetNodeId);
+            return;
+        }
+
+        var sourcePort = findPort(sourceNode, sourcePortId);
+        var targetPort = findPort(targetNode, targetPortId);
+
+        if (sourcePort == null) {
+            io.wispforest.owo.Owo.LOGGER.warn("[NodeScript] Connection references non-existent port '{}' on node '{}'", sourcePortId, sourceNode.name());
+            return;
+        }
+        if (targetPort == null) {
+            io.wispforest.owo.Owo.LOGGER.warn("[NodeScript] Connection references non-existent port '{}' on node '{}'", targetPortId, targetNode.name());
+            return;
+        }
+
+        graph.connect(sourcePort, targetPort);
+    }
+
+    private static @Nullable NodePort findPort(Node node, String portId) {
+        var port = node.getOutputPort(portId);
+        if (port != null) return port;
+        return node.getInputPort(portId);
     }
 
     /**

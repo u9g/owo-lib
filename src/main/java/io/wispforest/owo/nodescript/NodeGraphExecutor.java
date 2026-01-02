@@ -1,8 +1,9 @@
 package io.wispforest.owo.nodescript;
 
 import io.wispforest.owo.nodescript.model.*;
-import io.wispforest.owo.nodescript.nodes.StringConstantNode;
 import io.wispforest.owo.nodescript.nodes.BooleanConstantNode;
+import io.wispforest.owo.nodescript.nodes.NumberConstantNode;
+import io.wispforest.owo.nodescript.nodes.StringConstantNode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -95,16 +96,24 @@ public class NodeGraphExecutor {
         }
     }
 
+    /**
+     * Get the constant value from a node if it's a constant node type.
+     */
+    private @Nullable Object getConstantValue(Node node) {
+        if (node instanceof StringConstantNode stringConst) {
+            return stringConst.value();
+        } else if (node instanceof BooleanConstantNode boolConst) {
+            return boolConst.value();
+        } else if (node instanceof NumberConstantNode numberConst) {
+            return numberConst.value();
+        }
+        return null;
+    }
+
     private @Nullable Object getInputValue(NodePort port) {
         if (!port.isConnected()) {
-            // Check if the node is a constant node
-            var owner = port.owner();
-            if (owner instanceof StringConstantNode stringConst) {
-                return stringConst.value();
-            } else if (owner instanceof BooleanConstantNode boolConst) {
-                return boolConst.value();
-            }
-            return null;
+            // Check if the owning node is a constant node
+            return getConstantValue(port.owner());
         }
 
         var conn = port.connection();
@@ -123,10 +132,9 @@ public class NodeGraphExecutor {
             var sourceNode = sourcePort.owner();
 
             // Special handling for constant nodes
-            if (sourceNode instanceof StringConstantNode stringConst) {
-                return stringConst.value();
-            } else if (sourceNode instanceof BooleanConstantNode boolConst) {
-                return boolConst.value();
+            var constantValue = getConstantValue(sourceNode);
+            if (constantValue != null) {
+                return constantValue;
             }
 
             // Execute the node to get its value

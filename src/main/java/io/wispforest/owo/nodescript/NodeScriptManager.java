@@ -1,9 +1,13 @@
 package io.wispforest.owo.nodescript;
 
+import io.wispforest.owo.Owo;
 import io.wispforest.owo.nodescript.model.NodeGraph;
 import io.wispforest.owo.nodescript.nodes.AllowChatEventNode;
+import io.wispforest.owo.nodescript.nodes.ClientTickEventNode;
 import io.wispforest.owo.nodescript.nodes.HudRenderEventNode;
+import io.wispforest.owo.nodescript.nodes.KeyPressEventNode;
 import io.wispforest.owo.nodescript.serialization.NodeGraphSerializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
@@ -43,6 +47,11 @@ public class NodeScriptManager {
         // Register HUD render event handler
         HudRenderCallback.EVENT.register((context, tickCounter) -> {
             handleHudRenderEvent(tickCounter.getGameTimeDeltaPartialTick(false));
+        });
+
+        // Register client tick event handler
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            handleClientTickEvent();
         });
 
         // Load any saved graphs from disk
@@ -113,11 +122,43 @@ public class NodeScriptManager {
     }
 
     /**
+     * Handle the client tick event by executing relevant graphs.
+     */
+    private void handleClientTickEvent() {
+        for (var graph : loadedGraphs.values()) {
+            for (var node : graph.getEventNodes()) {
+                if (node instanceof ClientTickEventNode eventNode) {
+                    var executor = new NodeGraphExecutor(graph);
+                    var inputs = Map.<String, Object>of();
+                    executor.execute(eventNode, inputs);
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle key press events (called externally).
+     */
+    public void handleKeyPressEvent(int keyCode) {
+        for (var graph : loadedGraphs.values()) {
+            for (var node : graph.getEventNodes()) {
+                if (node instanceof KeyPressEventNode eventNode) {
+                    var executor = new NodeGraphExecutor(graph);
+                    var inputs = Map.<String, Object>of("key_code", keyCode);
+                    executor.execute(eventNode, inputs);
+                }
+            }
+        }
+    }
+
+    /**
      * Load all saved graphs from the nodescripts directory.
      */
     public void loadAllGraphs() {
         var scriptsPath = getScriptsPath();
         if (!Files.exists(scriptsPath)) return;
+
+        Owo.LOGGER.info("[NodeScript] Loading graphs from {}", scriptsPath);
 
         try (var stream = Files.list(scriptsPath)) {
             stream.filter(p -> p.toString().endsWith(".json"))
@@ -126,13 +167,16 @@ public class NodeScriptManager {
                         var graph = NodeGraphSerializer.loadFromFile(path);
                         if (graph != null) {
                             loadGraph(graph);
+                            Owo.LOGGER.info("[NodeScript] Loaded graph '{}' from {}", graph.name(), path.getFileName());
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Owo.LOGGER.error("[NodeScript] Failed to load graph from {}: {}", path, e.getMessage());
+                    } catch (Exception e) {
+                        Owo.LOGGER.error("[NodeScript] Error parsing graph from {}: {}", path, e.getMessage());
                     }
                 });
         } catch (IOException e) {
-            e.printStackTrace();
+            Owo.LOGGER.error("[NodeScript] Failed to list nodescripts directory: {}", e.getMessage());
         }
     }
 

@@ -259,6 +259,29 @@ public class NodeEditorWidget extends StatefulWidget {
                         )
                     )
                 );
+            } else if (selectedNode instanceof NumberConstantNode numberConst) {
+                var controller = new TextEditingController();
+                controller.setText(String.valueOf(numberConst.value()));
+                
+                // Track if current input is valid
+                final boolean[] isValid = {true};
+                controller.addListener(() -> {
+                    try {
+                        numberConst.setValue(Double.parseDouble(controller.value().text()));
+                        isValid[0] = true;
+                        setState(() -> {});
+                    } catch (NumberFormatException e) {
+                        isValid[0] = false;
+                    }
+                });
+
+                propertyWidgets.add(new Label(Component.literal("Value (number):")));
+                propertyWidgets.add(
+                    new Sized(
+                        null, 20.0,
+                        new TextBox(controller, widget -> widget.placeholder(Component.literal("Enter a number")))
+                    )
+                );
             }
 
             propertyWidgets.add(new Padding(Insets.vertical(8)));
