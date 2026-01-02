@@ -240,7 +240,7 @@ public class MovableCoordinateHudExample {
             // Wrap in draggable container with a larger drag handle area
             return Containers.draggable(Sizing.content(), Sizing.content(), coordinateDisplay)
                 .surface(Surface.PANEL)
-                .foreheadSize(15) // Larger drag handle at the top
+                .foreheadSize(15) // Sets the height (in pixels) of the draggable area at the top
                 .positioning(Positioning.absolute(10, 100)); // Initial position
         });
     }
@@ -317,15 +317,22 @@ public class MovablePotionHudExample {
 You can allow players to toggle HUD widgets on and off:
 
 ```java
+import io.wispforest.owo.ui.component.Components;
+import io.wispforest.owo.ui.container.Containers;
+import io.wispforest.owo.ui.core.*;
 import io.wispforest.owo.ui.hud.Hud;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public class YourClientMod implements ClientModInitializer {
+    
+    private static final Identifier ARMOR_HUD_ID = Identifier.of("yourmod", "armor_hud");
     
     @Override
     public void onInitializeClient() {
@@ -337,18 +344,36 @@ public class YourClientMod implements ClientModInitializer {
         );
         KeyBindingHelper.registerKeyBinding(toggleArmorHudKey);
         
-        var hudId = Identifier.of("yourmod", "armor_hud");
-        
         // Handle toggle logic
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleArmorHudKey.wasPressed()) {
-                if (Hud.hasComponent(hudId)) {
-                    Hud.remove(hudId);
+                if (Hud.hasComponent(ARMOR_HUD_ID)) {
+                    Hud.remove(ARMOR_HUD_ID);
                 } else {
-                    // Register your HUD component here
-                    MovableArmorHudExample.register();
+                    // Register the HUD component with the same ID
+                    registerArmorHud();
                 }
             }
+        });
+    }
+    
+    private void registerArmorHud() {
+        Hud.add(ARMOR_HUD_ID, () -> {
+            var client = MinecraftClient.getInstance();
+            
+            var content = Containers.verticalFlow(Sizing.content(), Sizing.content())
+                .child(Components.label(Text.literal("⚔ Armor")))
+                .child(Components.label(Text.literal(() -> {
+                    if (client.player == null) return "N/A";
+                    return "Armor: " + client.player.getArmor();
+                })))
+                .alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER)
+                .padding(Insets.of(5));
+            
+            return Containers.draggable(Sizing.content(), Sizing.content(), content)
+                .surface(Surface.PANEL)
+                .foreheadSize(15)
+                .positioning(Positioning.absolute(10, 10));
         });
     }
 }
@@ -461,20 +486,14 @@ public class AdvancedChatButtonsExample implements ClientModInitializer {
             // Add to root
             instance.adapter.rootComponent.child(commandButtons);
             
-            // Try to position above the chat input field
-            // Note: alignComponentToWidget takes a predicate to find the widget
+            // Position above the chat input field
+            // alignComponentToWidget automatically finds the widget and aligns to it
             instance.alignComponentToWidget(
                 widget -> widget instanceof TextFieldWidget,
                 Layer.Instance.AnchorSide.TOP,
                 0, // No offset along the anchor
                 commandButtons
             );
-            
-            // Note: If the widget isn't found, the component will default to its positioning
-            // We could add a fallback with queryWidget first if needed:
-            // if (instance.queryWidget(w -> w instanceof TextFieldWidget) == null) {
-            //     commandButtons.positioning(Positioning.relative(50, 95));
-            // }
             
         }, ChatScreen.class);
     }
