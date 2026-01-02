@@ -26,6 +26,8 @@ import io.wispforest.owo.ui.parsing.UIModel;
 import io.wispforest.owo.ui.util.UISounds;
 import io.wispforest.uwu.Uwu;
 import io.wispforest.uwu.client.braid.TestSelector;
+import io.wispforest.uwu.client.nodelang.NodeLanguageClientBridge;
+import io.wispforest.uwu.client.nodelang.NodeLanguageScreen;
 import io.wispforest.uwu.items.UwuBraidItem;
 import io.wispforest.uwu.network.UwuNetworkExample;
 import io.wispforest.uwu.network.UwuOptionalNetExample;
@@ -33,6 +35,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.PauseScreen;
@@ -73,6 +76,9 @@ public class UwuClient implements ClientModInitializer {
 
         final var bindingButCooler = new KeyMapping("key.uwu.hud_test_two", GLFW.GLFW_KEY_K, KeyMapping.Category.MISC);
         KeyBindingHelper.registerKeyBinding(bindingButCooler);
+
+        final var nodeLanguageBinding = new KeyMapping("key.uwu.node_language", GLFW.GLFW_KEY_N, KeyMapping.Category.MISC);
+        KeyBindingHelper.registerKeyBinding(nodeLanguageBinding);
 
         final var hudComponentId = Identifier.fromNamespaceAndPath("uwu", "test_element");
         final Supplier<UIComponent> hudComponent = () ->
@@ -124,6 +130,8 @@ public class UwuClient implements ClientModInitializer {
             new BraidHudElement(new HudTestWidget())
         );
 
+        HudRenderCallback.EVENT.register(NodeLanguageClientBridge::renderHud);
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (binding.consumeClick()) {
                 if (Hud.hasComponent(hudComponentId)) {
@@ -140,6 +148,12 @@ public class UwuClient implements ClientModInitializer {
                 //noinspection StatementWithEmptyBody
                 while (bindingButCooler.consumeClick()) {}
             }
+
+            while (nodeLanguageBinding.consumeClick()) {
+                Minecraft.getInstance().setScreen(new NodeLanguageScreen());
+            }
+
+            NodeLanguageClientBridge.onClientTick(client);
         });
 
         Uwu.CHANNEL.registerClientbound(Uwu.OtherTestMessage.class, (message, access) -> {
