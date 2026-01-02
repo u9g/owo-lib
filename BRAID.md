@@ -412,9 +412,11 @@ public class SharedCounter extends StatelessWidget {
 
 ## Hot Reloading (Development)
 
-Braid supports hot-reloading during development, allowing you to see UI changes without restarting Minecraft!
+Braid supports hot-reloading during development, allowing you to see UI changes without restarting Minecraft! This is an optional feature that can greatly speed up development.
 
 ### Setting Up Hot Reload
+
+Hot reloading works by using a Java agent that detects when Braid widget classes are recompiled and automatically triggers a UI rebuild.
 
 1. **Add the braid-reload-agent dependency** to your `build.gradle`:
 
@@ -423,23 +425,30 @@ dependencies {
     // Your existing dependencies
     modImplementation "io.wispforest:owo-lib:${project.owo_version}"
     
-    // Add the reload agent for development
-    modLocalRuntime "io.wispforest:braid-reload-agent:0.1.0"
+    // Add the reload agent for development (optional)
+    modRuntimeOnly "io.wispforest:braid-reload-agent:0.1.0"
 }
 ```
 
-2. **Configure your run configuration** to use the agent. In your `build.gradle`:
+2. **Configure your run configuration** to use the agent. There are two ways to do this:
+
+**Option A: Via build.gradle (recommended)**
 
 ```groovy
 loom {
     runs {
         client {
-            // Add this to enable hot reloading
-            vmArg "-javaagent:${configurations.modLocalRuntime.find { it.name.startsWith("braid-reload-agent") }.absolutePath}"
+            client()
+            // Enable hot reloading
+            vmArg "-javaagent:${configurations.runtimeClasspath.find { it.name.contains("braid-reload-agent") }?.absolutePath}"
         }
     }
 }
 ```
+
+**Option B: Manually in IDE run configuration**
+- Add the VM argument: `-javaagent:path/to/braid-reload-agent-0.1.0.jar`
+- The jar will be in your Gradle cache after running `./gradlew build`
 
 3. **Use your IDE's hot-swap feature**:
    - In IntelliJ IDEA: Run with Debug mode, then use "Build Project" (Ctrl+F9) to apply changes
@@ -587,8 +596,9 @@ public class SettingsScreen extends BraidScreen {
                             Component.literal("Enable Feature"),
                             enableFeature,
                             (checked) -> {
-                                enableFeature = checked;
-                                markNeedsBuild();
+                                setState(() -> {
+                                    enableFeature = checked;
+                                });
                             }
                         ),
                         
@@ -597,8 +607,9 @@ public class SettingsScreen extends BraidScreen {
                             Component.literal("Volume"),
                             0.0, 1.0, volume,
                             (newVolume) -> {
-                                volume = newVolume;
-                                markNeedsBuild();
+                                setState(() -> {
+                                    volume = newVolume;
+                                });
                             }
                         ),
                         
@@ -629,9 +640,83 @@ public class SettingsScreen extends BraidScreen {
 1. **Use StatelessWidget when possible**: Stateless widgets are simpler and more efficient
 2. **Break down complex UIs**: Create small, reusable widget classes
 3. **Leverage ListenableValue**: For reactive state that multiple widgets depend on
-4. **Use const constructors**: When widgets don't change, they can be reused
-5. **Hot reload during development**: It dramatically speeds up UI development
-6. **Explore the widget library**: Braid has many built-in widgets that solve common problems
+4. **Use SharedState for cross-widget state**: When multiple widgets need to access the same state
+5. **Always use setState()**: In StatefulWidget, always use `setState(() -> { ... })` to update state
+6. **Hot reload during development**: It dramatically speeds up UI development
+7. **Explore the widget library**: Braid has many built-in widgets that solve common problems
+8. **Use BraidApp wrapper**: It provides default keyboard shortcuts and navigation (enabled by default in BraidScreen)
+
+## Quick Reference
+
+### Common Widget Constructors
+
+```java
+// Layouts
+new Column(MainAxisAlignment, CrossAxisAlignment, List.of(children))
+new Row(MainAxisAlignment, CrossAxisAlignment, List.of(children))
+new Stack(List.of(children))
+new Center(child)
+new Padding(Insets, child)
+new Align(Alignment, child)
+
+// Sizing
+new Sized(width, height, child)
+new Sized(Size.square(size), child)
+new Sized(Size.fixed(width, height), child)
+
+// Interactive
+new Button(onClick, child)
+new MessageButton(Component, onClick)
+new Checkbox(Component, initialValue, onChange)
+new TextBox(controller)
+new Slider(min, max, initialValue, onChange)
+
+// Display
+new Label(Component)
+Label.literal("text")  // Convenience method
+new Box(Color, bordered)
+new Panel(Panel.VANILLA_DARK, child)
+new ItemStackWidget(ItemStack)
+new EntityWidget(scale, entity)
+```
+
+### State Management Patterns
+
+```java
+// StatelessWidget - no state
+public class MyWidget extends StatelessWidget {
+    @Override
+    public Widget build(BuildContext context) {
+        return new Label(Component.literal("Static"));
+    }
+}
+
+// StatefulWidget - local state
+public class Counter extends StatefulWidget {
+    @Override
+    public WidgetState<Counter> createState() {
+        return new CounterState();
+    }
+    
+    static class CounterState extends WidgetState<Counter> {
+        private int count = 0;
+        
+        @Override
+        public Widget build(BuildContext context) {
+            return new Button(() -> setState(() -> count++), 
+                new Label(Component.literal("Count: " + count)));
+        }
+    }
+}
+
+// SharedState - shared across widgets
+new SharedState<>(
+    MyState::new,
+    child
+)
+// Access with: SharedState.get(context, MyState.class)
+// Update with: SharedState.set(context, MyState.class, state -> state.value++)
+```
 
 ## Migration from owo-ui
 
