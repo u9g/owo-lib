@@ -11,6 +11,9 @@ This document provides comprehensive examples for building common in-game widget
    - [Making HUD Widgets Movable](#making-hud-widgets-movable)
 2. [Modifying Existing GUIs](#modifying-existing-guis)
    - [Adding Buttons to Chat Screen](#adding-buttons-to-chat-screen)
+3. [Best Practices](#best-practices)
+4. [Complete Working Example](#complete-working-example)
+5. [Additional Resources](#additional-resources)
 
 ---
 
@@ -511,10 +514,10 @@ public class AdvancedChatButtonsExample implements ClientModInitializer {
 ```
 
 **Key Points:**
-- Use `instance.queryWidget()` to find widgets in the target screen
-- Use `instance.alignComponentToWidget()` to align your components to existing widgets
+- Use `instance.alignComponentToWidget()` to align your components to existing widgets using a predicate
 - `AnchorSide` determines which side of the widget to align to (TOP, BOTTOM, LEFT, RIGHT)
-- This approach works with any screen that has widgets you can query
+- You can also use `instance.queryWidget()` first to check if a widget exists before aligning
+- This approach works with any screen that has widgets you can find
 
 ### Multiple Button Layouts
 
