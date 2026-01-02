@@ -120,7 +120,6 @@ import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.core.*;
 import io.wispforest.owo.ui.hud.Hud;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -132,72 +131,23 @@ public class PotionEffectHudExample {
         Hud.add(hudId, () -> {
             var client = MinecraftClient.getInstance();
             
-            // Create a container that dynamically updates with active effects
-            var container = Containers.verticalFlow(Sizing.content(), Sizing.content())
-                .padding(Insets.of(5))
-                .surface(Surface.PANEL)
-                .positioning(Positioning.relative(95, 5)); // Top-right corner
-            
-            // Add a title
-            container.child(Components.label(Text.literal("Active Effects"))
-                .margins(Insets.bottom(3)));
-            
-            // The effect list needs to be rebuilt each frame, so we use a custom component
-            // or we can create a wrapper that rebuilds children
-            return Containers.verticalFlow(Sizing.content(), Sizing.content())
-                .positioning(Positioning.relative(95, 5))
-                .surface(Surface.PANEL)
-                .padding(Insets.of(5))
-                .<ParentComponent>configure(layout -> {
-                    // This approach uses a layout that rebuilds every frame
-                    // In production, consider using a more efficient update mechanism
-                });
-        });
-    }
-    
-    // Better approach: Create a custom component that updates efficiently
-    public static void registerOptimized() {
-        var hudId = Identifier.of("yourmod", "potion_effect_hud");
-        
-        Hud.add(hudId, () -> {
-            var client = MinecraftClient.getInstance();
-            
-            var effectsContainer = Containers.verticalFlow(Sizing.content(), Sizing.content())
-                .gap(2);
-            
+            // Create a simple effects counter display
+            // For a more complex implementation that lists each effect individually,
+            // consider using a custom component or updating children dynamically
             return Containers.verticalFlow(Sizing.content(), Sizing.content())
                 .child(Components.label(Text.literal("Active Effects"))
                     .margins(Insets.bottom(3)))
-                .child(effectsContainer.<ParentComponent>configure(container -> {
-                    // Update logic would go here
-                    // For this example, we'll keep it simple
-                }))
-                .padding(Insets.of(5))
-                .surface(Surface.PANEL)
-                .positioning(Positioning.relative(95, 5));
-        });
-    }
-    
-    // Simple static example for demonstration
-    public static void registerSimple() {
-        var hudId = Identifier.of("yourmod", "potion_effect_hud");
-        
-        Hud.add(hudId, () -> {
-            return Containers.verticalFlow(Sizing.content(), Sizing.content())
-                .child(Components.label(Text.literal("Active Effects")))
                 .child(Components.label(Text.literal(() -> {
-                    var client = MinecraftClient.getInstance();
                     if (client.player == null) return "None";
                     
                     var effects = client.player.getStatusEffects();
                     if (effects.isEmpty()) return "None";
                     
-                    // Display count of active effects
-                    return effects.size() + " effect(s)";
+                    return effects.size() + " effect" + (effects.size() > 1 ? "s" : "");
                 })))
                 .padding(Insets.of(5))
                 .surface(Surface.PANEL)
-                .positioning(Positioning.relative(95, 5));
+                .positioning(Positioning.relative(95, 5)); // Top-right corner
         });
     }
 }
@@ -206,7 +156,7 @@ public class PotionEffectHudExample {
 **Key Points:**
 - For complex dynamic content, consider creating custom components
 - Use `Positioning.relative(95, 5)` to position in the top-right corner
-- The `gap()` method adds spacing between child components
+- This example shows a simple effect counter; for detailed effect lists, implement custom update logic
 
 ---
 
