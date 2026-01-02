@@ -47,6 +47,11 @@ public class UwuClient implements ClientModInitializer {
         UwuNetworkExample.Client.init();
         UwuOptionalNetExample.Client.init();
 
+        // Initialize example HUD components (armor, coords, potion effects)
+        ExampleHuds.init();
+        // Initialize chat screen layer example (quick command buttons)
+        ChatScreenLayerExample.init();
+
         HandledScreens.register(Uwu.EPIC_SCREEN_HANDLER_TYPE, EpicHandledScreen::new);
 //        HandledScreens.register(EPIC_SCREEN_HANDLER_TYPE, EpicHandledModelScreen::new);
 

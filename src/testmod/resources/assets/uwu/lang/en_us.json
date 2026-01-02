@@ -25,6 +25,18 @@
       "color": "#0096FF"
     }
   ],
+  "key.uwu.hud_test_two": [
+    {
+      "text": "Reload Test HUD Two",
+      "color": "#0096FF"
+    }
+  ],
+  "key.uwu.toggle_example_huds": [
+    {
+      "text": "Toggle Example HUDs",
+      "color": "#00FF96"
+    }
+  ],
   "text.ui.test_slider": "Value: %s",
   "text.config.uwu.section.top": "Top Text",
   "text.config.uwu.option.aValue": "A Value",
