@@ -381,18 +381,28 @@ Braid supports hot reload during development, allowing you to see UI changes imm
 
 ### Setting Up the Braid Reload Agent
 
-1. Build the braid-reload-agent:
+The braid-reload-agent is located in the `braid-reload-agent` directory of the owo-lib repository. If you're developing against owo-lib locally, you can build it yourself:
+
+1. Clone or navigate to the owo-lib repository and build the braid-reload-agent:
 ```bash
+# From the owo-lib repository root
 cd braid-reload-agent
 ./gradlew build
 ```
 
-2. Add the agent to your run configuration. In your IDE's run configuration, add this JVM argument:
+2. The built JAR will be located at `braid-reload-agent/build/libs/braid-reload-agent-0.1.0.jar`
+
+3. Add the agent to your run configuration. In your IDE's run configuration (e.g., IntelliJ IDEA's Run/Debug Configurations), add this JVM argument:
 ```
--javaagent:path/to/braid-reload-agent.jar
+-javaagent:/absolute/path/to/braid-reload-agent-0.1.0.jar
 ```
 
-3. Enable hot reload in your IDE (e.g., IntelliJ IDEA's "Build on Save" or use the "Recompile" action)
+   For example, if you cloned owo-lib to `/home/user/projects/owo-lib`:
+```
+-javaagent:/home/user/projects/owo-lib/braid-reload-agent/build/libs/braid-reload-agent-0.1.0.jar
+```
+
+4. Enable hot reload in your IDE (e.g., IntelliJ IDEA's "Build on Save" or use the "Recompile" action with Ctrl+Shift+F9)
 
 When you modify a Widget or WidgetState class and recompile, the changes will be reflected immediately in the running game.
 
