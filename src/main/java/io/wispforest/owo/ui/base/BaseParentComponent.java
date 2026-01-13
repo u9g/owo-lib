@@ -365,7 +365,7 @@ public abstract class BaseParentComponent extends BaseComponent implements Paren
             context.getMatrices().translate(0, 0, child.zIndex() + 1);
 
             child.draw(context, mouseX, mouseY, partialTicks, delta);
-            if (focusHandler.lastFocusSource() == FocusSource.KEYBOARD_CYCLE && focusHandler.focused() == child) {
+            if (focusHandler != null && focusHandler.lastFocusSource() == FocusSource.KEYBOARD_CYCLE && focusHandler.focused() == child) {
                 child.drawFocusHighlight(context, mouseX, mouseY, partialTicks, delta);
             }
 
